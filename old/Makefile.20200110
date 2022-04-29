@@ -1,0 +1,31 @@
+CC = gcc -O2
+CCFLAGS = -Wall -pedantic
+DBGFLAGS = -g
+LIBOCL = -lOpenCL
+LIBTHREAD = -lpthread
+
+TARGETS = libacmatch.a ocl_aho_grep 
+
+all: $(TARGETS)
+
+ocl_aho_grep: ocl_aho_grep.c utils.o file_traverse.o ocl_worker.o \
+	libacmatch.a
+	$(CC) $(CCFLAGS) $^ $(LIBOCL) $(LIBTHREAD) -o $@
+
+libacmatch.a: ocl_context.o databuf.o ocl_aho_match.o acsmx.o \
+	ocl_bitonic_sort.o
+	ar rcs $@ $^
+
+clean:
+	rm -f $(TARGETS) *.o
+
+# header deps
+ocl_aho_grep.o: utils.h ocl_context.h databuf.h
+utils.o: utils.h common.h
+ocl_context.o: ocl_context.h common.h
+databuf.o: databuf.h common.h ocl_context.h
+ocl_aho_match.o: ocl_aho_match.h acsmx.h ocl_context.h common.h file_traverse.h
+ocl_bitonic_sort.o: ocl_bitonic_sort.c ocl_bitonic_sort.h
+ocl_worker.o: ocl_worker.h common.h ocl_context.h acsmx.h databuf.h utils.h
+acsmx.o: acsmx.h common.h ocl_context.h
+file_traverse.o: file_traverse.c file_traverse.h

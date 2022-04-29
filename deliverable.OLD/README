@@ -1,0 +1,78 @@
+The tool searches the input file(s) for the given fixed string patterns. The
+patterns can only be fixed strings (not regular expressions), and can be
+represented either in ASCII or in hex format.
+
+Usage:
+
+    ocl_aho_grep -f file -p file
+                 -B chunk_size -D devpos -G global_ws -L local_ws
+                 [-m max] [-w cpu_threads] [-R max] [-vxMh]
+
+Options:
+
+ -f    file         Path to the input file.  The path can be a single
+                    directory, a single file or many comma-separated files.
+
+ -p    file         Path to the file containing the patterns, one pattern
+                    per line.
+
+ -B    chunk_size   Maximum data chunk size (in bytes), that each OpenCL
+                    kernel thread will process.
+
+ -D    devpos       A number indicating which OpenCL device will be used.
+                    Device positions can be found with clinfo.
+
+ -G    global_ws    Global Work Size for the OpenCL kernel.
+                    NOTE: buffer_size = global_ws * chunk_size.
+
+ -L    local_ws     Local Work Size for the OpenCL kernel.
+
+ -m    max          Limit the pattern size to max bytes. If a pattern is
+                    smaller than max, the entire pattern will be used.
+
+ -w    cpu_threads  Number of CPU threads that will be used for feeding
+                    OpenCL kernel with data. Default: 2.
+
+  -R    max          Maximum number of result slots per chunk. The first is
+                     always reserved in order to store the number of matches
+                     found per chunk. The rest are used to store the offsets
+                     where the patterns have been found. Default: 16.
+
+  -v                 Prints the file name and the patterns found. The number
+                     of pattern IDs reported is affected by [-R max].
+
+  -x                 Handles the patterns as printable hex. The patterns
+                     should not contain the '0x' notation.
+
+  -M                 Set mapped buffers (CPU or integrated GPU). Default: 0.
+
+  -h                 Prints a help message.
+
+
+
+Examples:
+
+
+# Search all the files in /usr/bin/ for the patterns stored in
+# /usr/share/dict/words. Use 4 CPU worker threads to feed the device with
+# data.
+
+./ocl_aho_grep -p /usr/share/dict/words -f /usr/bin/ -B 2048 -D 1 -L 1024 -G 32768 -w 4
+
+
+# Search all the files in /usr/bin/ for the patterns stored in
+# clamav_sample_sigs/2000.txt. The patterns are in hex format, hence
+# the '-x' argument.
+
+./ocl_aho_grep -p clamav_sample_sigs/2000.txt -x -f /usr/bin/ -B 4096 -D 1 -L 1024 -G 32768
+
+
+# Search all the files in /usr/bin/ for the patterns stored in
+# clamav_sample_sigs/15000.txt. The '-m 12' argument indicates that the tool
+# will search only the first 12 bytes of each signature (partial match). The
+# patterns are in hex format, hence the '-x' argument. The results will be
+# printed in the output ('-v' argument).
+
+./ocl_aho_grep -p clamav_sample_sigs/15000.txt -x -f /usr/bin/ -B 4096 -D 1 -L 1024 -G 32768 -w 4 -m 12 -v
+
+

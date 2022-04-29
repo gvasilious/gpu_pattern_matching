@@ -1,0 +1,150 @@
+#ifndef _DATABUF_H_
+#define _DATABUF_H_
+
+#include <CL/opencl.h>
+
+
+/* maximum number of result cells per chunk */
+#define MAX_RESULTS 16
+
+
+/*
+ * data buffer
+ */
+struct databuf {
+	unsigned char	*h_data;        /* host data array                    */
+	int 		*h_indices;     /* host chunk indices array           */
+	int		*h_sizes;	/* host chunk sizes array             */
+	int		*h_results;	/* host results array (pattern id)    */
+	int		*h_results2;	/* host results array (offset)        */
+	int		*h_results_sorted;
+	int		*h_results2_sorted;
+	int		*file_ids;      /* file ID per chunk                  */ 
+	int		mapped;		/* memory mapped buffer flag          */
+	int		max_results;	/* maximum result cells per chunk     */
+	long		last_state;	/* last match state at the last chunk */
+	size_t		max_chunks;	/* maximum number of chunks           */
+	size_t		max_chunk_size;	/* maximum chunk size (Bytes)         */
+	size_t		size;		/* data buffer size (Bytes)           */
+	size_t		chunks;		/* current number of chunks in buffer */
+	size_t		bytes;		/* current data bytes in buffer       */
+
+	cl_mem		d_data;		/* device data array                  */
+	cl_mem		d_indices;	/* device chunk indices array         */
+	cl_mem		d_sizes;	/* device chunk sizes array           */
+	cl_mem		d_results;	/* device results array               */
+	cl_mem		d_results2;	/* device results array               */
+	cl_mem		d_results_sorted;	/* device results array               */
+	cl_mem		d_results2_sorted;	/* device results array               */
+
+	cl_mem		p_data;		/* pinned memory data handle          */
+	cl_mem		p_indices;	/* pinned memory chunk indices handle */
+	cl_mem		p_sizes;	/* pinned memory chunk sizes handle   */
+	cl_mem		p_results;	/* pinned memory results handle       */
+	cl_mem		p_results_sorted;
+	cl_mem		p_results2_sorted;
+	cl_mem		p_results2;	/* pinned memory results handle       */
+};
+
+
+/*
+ * creates a new data buffer
+ * returns a pointer to the data buffer
+ *
+ * arg0: maximum number of chunks
+ * arg1: maximum chunk size
+ * arg2: maximum result cells per chunk
+ * arg3: mapped buffer flag
+ * arg4: OpenCL context
+ * arg5: OpenCL command queue
+ *
+ * ret:  a new data buffer object
+ */
+struct databuf *
+databuf_new(size_t, size_t, int, int, cl_context, cl_command_queue); 
+
+
+/*
+ * adds bytes to the data buffer using file descriptor
+ *
+ * arg0: data buffer
+ * arg1: file descriptor
+ * arg2: file id
+ * arg3: read bytes counter
+ *
+ * ret:   1 if the buffer can hold more data after this call
+ *       -1 if the buffer is full of chunks
+ *       -2 if the buffer is full of bytes
+ * ret:  always returns the read bytes via arg3
+ */
+int
+databuf_add_fd(struct databuf *, int, int, size_t *);
+
+/*
+ * adds lines to the data buffer using file pointer
+ *
+ * arg0: data buffer
+ * arg1: file pointer
+ * arg2: file id
+ * arg3: whether data will be stored aligned
+ * arg4: read bytes counter
+ * arg5: read lines counter
+ *
+ * ret:   1 if the buffer can hold more data after this call
+ *       -1 if the buffer is full of chunks
+ *       -2 if the buffer is full of bytes
+ * ret:  always returns the read bytes and read lines via arg4 and arg5
+ */
+int
+databuf_add_fp(struct databuf *, FILE *, int, int, size_t *, size_t*);
+
+
+/*
+ * resets the data buffer for reuse
+ *
+ * arg0: data buffer
+ */
+void
+databuf_reset(struct databuf *);
+
+
+/*
+ * clears the data buffer
+ *
+ * arg0: data buffer
+ */
+void
+databuf_clear(struct databuf *);
+
+
+/*
+ * copies the data buffer to the device
+ *
+ * arg0: data buffer
+ * arg1: OpenCL command queue
+ */
+void
+databuf_copy_host_to_device(struct databuf *, cl_command_queue);
+
+
+/*
+ * copies the data buffer to the device
+ *
+ * arg0: data buffer
+ * arg1: OpenCL command queue
+ */
+void
+databuf_copy_device_to_host(struct databuf *, cl_command_queue);
+
+
+/*
+ * frees the data buffer
+ *
+ * arg0: data buffer
+ * arg2: OpenCL command queue
+ */
+void
+databuf_free(struct databuf *, int, cl_command_queue);
+
+
+#endif /* _DATABUF_H_ */

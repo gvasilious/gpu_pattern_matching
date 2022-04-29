@@ -1,0 +1,6 @@
+1 " good "
+2 " excellent "
+3 " pretty "
+-1 " bad "
+-2 " worse "
+-3 " shit "

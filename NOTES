@@ -1,0 +1,32 @@
+An OpenCL Aho-Corasick-based matching tool.
+
+--------------------------------------------------------------------------------
+
+Note:
+	The number used by the -G switch is (almost) equivalent to CUDA's 
+	blocks*threads. The size of the data buffer will be a multiple of this
+	value. The input file may have more lines than that, so the matcher will 
+	execute multiple kernels until it processes the entire input.
+
+--------------------------------------------------------------------------------
+
+TODO
+(done)	 1) Avoid double-copy when processing the file.
+(done)	 2) Finish the serialize-a-single-bin-file kernel, where each thread is 
+	    assigned with a basic block and keeps matching IF it starts one until 
+	    it either succeeds or fails.
+(done)	 3) Performance counters.
+(done)	 4) Handle verbosity via switches.
+(done)	 5) HEX patterns.
+(done)	 6) Multiple file support.
+(done)	 7) More work items.
+(done)	 8) POSIX threads.
+(done)	 9) CACHE optimization.
+(done)	10) Finish doc and refactoring.
+	11) Rerun all tests.
+	12) Make static lib.
+	13) Maby create .sh tests.
+(done)	14) Pattern size limit.
+	15) Sometimes the program terminates with an
+	    "ERROR executing kernel: CL_INVALID_GLOBAL_WORK_SIZE" when CTRL-C.
+--------------------------------------------------------------------------------

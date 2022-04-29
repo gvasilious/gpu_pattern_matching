@@ -1,0 +1,40 @@
+# Eva Papadogiannaki
+# epapado@ics.forth.gr
+
+This README will shed some light on the execution requirements for 'ocl_aho_grep'. 
+
+This 'ocl_aho_grep' tool reports pattern matches against the input files.
+What is special about this 'ocl_aho_grep' tool is that it does not match fixed strings as it is expected by a traditional Aho-Corasick (AC) implementation.
+A traditional Aho-Corasick (AC) implementation, which is destined for deep packet inspection, would match fixed strings (e.g., URLs or packet payload contents) against the network traffic. 
+This tool matches patterns that are expressed as sequences of short unsigned integers in order to be suitable for packet metadata (e.g., packet payload sizes) matching.
+So, the typical Aho-Corasick (AC) implementation for deep packet inspection that matches fixed strings against network traffic, is now extended to enable the matching of sequences of packet metadata against the network traffic (serves for encrypted network inspection). 
+Something that we have to stress here, is that in a typical AC implementation is stateless, which means that the matching is done per network packet. 
+To match metadata sequences though, we have to build a stateful system, since we match sequences of metadata against the packets of a network flow. For good performance (e.g.,high processing throughput), the representation of the signatures must be simple, yet, expressive enough. 
+
+Each signature must have the following format:
+
+> A comma separated sequence of packet metadata (ushorts) ; The sequence length (number of packet metadata) ; Details about the signature (e.g., attack name, CVE, etc.)
+
+Examples:
+
+Example 1: 
+	40,32,287,32,106,196,32,32,32,56,32,20,20,20,40,32,287,32,106,32,32,196; 22; File scanner (metasploit file scanning)
+
+Example 2:
+	40,32,287,32,106,186,32,32,32,56,32,20,20,40,32,287,32,106,188; 19; Directory scanner (metasploit directory scanning)
+
+
+Currently, we support offline network traffic inspection. This means that we are able to process only network packet traces, so far. The support for the real time network processing is on the way.  
+The network traffic traces must be preprocessed and be provided under the same directory. 
+The sequences of the packets for each network flow (i.e., the typical 5-tuple network flow that consists of the source IP address, the source port, the destination IP address, the destination port and the protocol name) must be given using files.
+For example, the file that contains the network packets of the flow {src_ip: '135.12.13.1', src_port:'4444', dst_ip:'10.177.9.9', dst_port:'443', proto:'tcp'} must be named "135.12.13.1_4444_10.177.9.9_443_tcp". 
+The contents of the file should have the following format: 0,0,0,0,0,999,89,10,10,500,898
+
+You can do a sample run using the following command:
+
+$ ./ocl_aho_grep -p input/test_pattern -f input/test_input_dir/ -B 2048 -D 1 -L 1024 -G 32768 -w 4 -v
+
+The file under the path "input/test_pattern" contains 3 sample signatures. 
+The directory under the path "input/test_inout_dir/" contains two files with names "10.19.1.5_333_152.29.9.15_443_tcp" and "10.19.1.5_666_152.29.9.115_443_tcp" that contain the sequences of the packet sizes for each network flow.  
+
+
