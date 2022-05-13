@@ -1,0 +1,5 @@
+IMDB Movie Ratings Sentiment Analysis
+
+The dataset has 40k training samples labelled as 1 & 0 for positive & negative reviews.
+
+link: https://www.kaggle.com/datasets/yasserh/imdb-movie-ratings-sentiment-analysis?resource=download
